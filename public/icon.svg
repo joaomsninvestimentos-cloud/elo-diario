@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Elo Diário">
+  <rect width="512" height="512" rx="112" fill="#f7f3ec"/>
+  <rect x="56" y="56" width="400" height="400" rx="84" fill="#b4552f"/>
+  <text x="256" y="352" font-family="Georgia, 'Times New Roman', serif" font-size="260" font-style="italic" fill="#fffdf9" text-anchor="middle">é</text>
+</svg>
