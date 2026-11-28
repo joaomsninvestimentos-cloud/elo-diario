@@ -7,19 +7,25 @@ import LoginScreen from './screens/LoginScreen';
 import HomeScreen from './screens/HomeScreen';
 import EditorScreen from './screens/EditorScreen';
 import SettingsSheet from './components/SettingsSheet';
+import LockScreen from './screens/LockScreen';
+import { loadLock, disableLock, type LockSettings } from './lib/lock';
 
 type View = { name: 'home' } | { name: 'editor'; id: string };
 
 export default function App() {
-  const { session, loading, cloud } = useAuth();
+  const { session, loading, cloud, signOut } = useAuth();
   const [notes, setNotes] = useState<Note[]>([]);
   const [meta, setMeta] = useState<SyncMeta | null>(null);
   const [view, setView] = useState<View>({ name: 'home' });
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [lastResult, setLastResult] = useState<string | null>(null);
+  const [lock, setLock] = useState<LockSettings | null>(null);
+  const [locked, setLocked] = useState(false);
+  const [lockReady, setLockReady] = useState(false);
   const syncTimer = useRef<number | null>(null);
   const revision = useRef(0);
+  const hiddenAt = useRef<number | null>(null);
 
   /**
    * Relê o banco local. Uma leitura que começou antes de uma gravação mais nova
@@ -36,6 +42,35 @@ export default function App() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  // carrega a configuração de bloqueio antes de mostrar qualquer conteúdo
+  useEffect(() => {
+    loadLock().then((stored) => {
+      setLock(stored);
+      setLocked(Boolean(stored?.enabled));
+      setLockReady(true);
+    });
+  }, []);
+
+  /**
+   * Trava o app ao voltar do segundo plano depois do tempo configurado.
+   * "Só ao fechar" (0) trava em toda saída do app.
+   */
+  useEffect(() => {
+    const onVisibility = () => {
+      if (!lock?.enabled) return;
+      if (document.visibilityState === 'hidden') {
+        hiddenAt.current = Date.now();
+        return;
+      }
+      const away = hiddenAt.current ? Date.now() - hiddenAt.current : 0;
+      const limit = lock.autoLockMinutes * 60_000;
+      if (lock.autoLockMinutes === 0 || away >= limit) setLocked(true);
+      hiddenAt.current = null;
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
+  }, [lock]);
 
   // escuta o botão voltar do Android
   useEffect(() => {
@@ -115,12 +150,36 @@ export default function App() {
     window.history.back();
   };
 
-  if (loading) {
+  if (loading || !lockReady) {
     return (
       <div className="boot-screen">
         <span className="brand-mark">é</span>
         <p>Carregando…</p>
       </div>
+    );
+  }
+
+  if (locked && lock) {
+    return (
+      <LockScreen
+        settings={lock}
+        onUnlock={() => setLocked(false)}
+        onForgot={async () => {
+          // sem o PIN, o acesso é refeito: desliga o bloqueio e pede o login de novo
+          if (
+            !window.confirm(
+              'Sem o PIN, o bloqueio será desligado e você entrará de novo na sua conta. Continuar?',
+            )
+          ) {
+            return;
+          }
+          await disableLock();
+          setLock(null);
+          setLocked(false);
+          // refaz o acesso pela conta (quando há nuvem configurada)
+          if (cloud) await signOut();
+        }}
+      />
     );
   }
 
@@ -164,6 +223,11 @@ export default function App() {
         syncing={syncing}
         onSync={runSync}
         onReload={refresh}
+        lock={lock}
+        onLockChange={(next) => {
+          setLock(next);
+          if (!next) setLocked(false);
+        }}
       />
     </div>
   );

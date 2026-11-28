@@ -718,3 +718,146 @@ textarea:focus {
     max-height: 66dvh;
   }
 }
+
+/* ---------- bloqueio por PIN ---------- */
+
+.lock-screen {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: max(env(safe-area-inset-top), 16px) 20px max(env(safe-area-inset-bottom), 16px);
+  background: radial-gradient(circle at 50% 0%, var(--accent-soft), transparent 60%), var(--paper);
+}
+
+.lock-card {
+  width: min(360px, 100%);
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.lock-card h1 {
+  font-size: 1.35rem;
+}
+
+.lock-card p {
+  margin: 0;
+}
+
+.shake {
+  animation: shake 0.38s ease;
+}
+
+@keyframes shake {
+  20% { transform: translateX(-7px); }
+  40% { transform: translateX(7px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.pin-dots {
+  display: flex;
+  gap: 12px;
+  margin: 6px 0 2px;
+  min-height: 16px;
+}
+
+.pin-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-faint);
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+
+.pin-dot.filled {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.1);
+}
+
+.pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: min(300px, 100%);
+  margin: 8px 0;
+}
+
+.pin-key {
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--paper-elevated);
+  font-family: 'Lora', serif;
+  font-size: 1.45rem;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.12s ease;
+}
+
+.pin-key:active {
+  transform: scale(0.94);
+  background: var(--accent-soft);
+}
+
+.pin-key-ghost {
+  background: transparent;
+  border-color: transparent;
+  font-size: 1.1rem;
+}
+
+.pin-key-ok {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-size: 1.1rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.pin-key-ok:disabled {
+  opacity: 0.4;
+}
+
+.lock-setup {
+  display: grid;
+  gap: 10px;
+}
+
+.lock-setup h3 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-faint);
+  font-family: 'Inter', sans-serif;
+  margin: 0;
+}
+
+.lock-setup p {
+  margin: 0;
+}
+
+.pin-input {
+  font-size: 1.4rem;
+  letter-spacing: 0.5em;
+  text-align: center;
+  font-family: 'Lora', serif;
+}
+
+.lock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.lock-row select {
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 10px;
+}

@@ -44,3 +44,47 @@ describe('App sem nuvem configurada (modo local)', () => {
     expect(await screen.findByText(/Modo local/)).toBeTruthy();
   });
 });
+
+describe('bloqueio por PIN', () => {
+  it('pede o PIN antes de mostrar o diário e libera com o PIN certo', async () => {
+    const { createLock } = await import('../lib/lock');
+    await createLock('1357', 5);
+    const user = userEvent.setup();
+    renderApp();
+
+    // a lista só aparece depois do PIN
+    expect(await screen.findByText(/Digite seu PIN/)).toBeTruthy();
+    expect(screen.queryByText('Nova página')).toBeNull();
+
+    for (const digit of ['1', '3', '5', '7']) {
+      await user.click(screen.getByRole('button', { name: digit }));
+    }
+    await user.click(screen.getByRole('button', { name: 'Entrar' }));
+
+    expect(await screen.findByText('Nova página')).toBeTruthy();
+  });
+
+  it('não libera com o PIN errado', async () => {
+    const { createLock } = await import('../lib/lock');
+    await createLock('2468', 5);
+    const user = userEvent.setup();
+    renderApp();
+
+    await screen.findByText(/Digite seu PIN/);
+    for (const digit of ['9', '9', '9', '9']) {
+      await user.click(screen.getByRole('button', { name: digit }));
+    }
+    await user.click(screen.getByRole('button', { name: 'Entrar' }));
+
+    expect(await screen.findByText('PIN incorreto.')).toBeTruthy();
+    expect(screen.queryByText('Nova página')).toBeNull();
+  });
+
+  it('sem bloqueio configurado abre direto no diário', async () => {
+    const { disableLock } = await import('../lib/lock');
+    await disableLock();
+    renderApp();
+    expect(await screen.findByText('Nova página')).toBeTruthy();
+    expect(screen.queryByText(/Digite seu PIN/)).toBeNull();
+  });
+});
