@@ -25,6 +25,8 @@ passo abaixo) para usar de verdade.
 | Sincronização entre celulares e tablet, com mesclagem por campo | ✅ |
 | Funciona offline (IndexedDB + service worker) | ✅ |
 | Backup/restauração em arquivo JSON | ✅ |
+| **Bloqueio por PIN** (4–8 dígitos, PBKDF2) | ✅ |
+| **Biometria** do aparelho para desbloquear | ✅ |
 | Hospedagem HTTPS automática (GitHub Pages) | ✅ |
 
 ## Como o desenho é guardado
@@ -124,6 +126,20 @@ npm test           # testes da mesclagem e do desenho
 npm run typecheck  # verificação de tipos
 npm run build      # build de produção em dist/
 ```
+
+## Bloqueio do app
+
+Em **⚙ Ajustes → Bloqueio do app** dá para ativar um PIN de 4 a 8 dígitos.
+
+- O PIN **nunca é guardado**: fica salvo só um resumo PBKDF2-SHA256 (210 mil iterações)
+  com salt aleatório de 16 bytes, e a comparação é feita em tempo constante.
+- Opcionalmente cadastre a **biometria** do aparelho (WebAuthn, autenticador de
+  plataforma) — é só um atalho local; o PIN continua valendo e é o que libera em
+  aparelho novo.
+- Trava ao abrir o app e também depois de 1, 5 ou 15 minutos em segundo plano
+  (ou a cada saída, na opção "Só ao fechar").
+- **Esqueci o PIN**: o bloqueio é desligado e o acesso é refeito pelo login da conta.
+  Os dados continuam lá — o bloqueio protege a tela, não substitui a senha da conta.
 
 ## Limitações conhecidas
 

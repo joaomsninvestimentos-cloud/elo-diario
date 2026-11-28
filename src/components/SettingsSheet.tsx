@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 import { useAuth } from '../lib/auth';
 import { exportAll, importAll } from '../lib/db';
 import type { SyncMeta } from '../lib/types';
+import LockSettingsSection from './LockSettings';
+import type { LockSettings } from '../lib/lock';
 
 interface Props {
   open: boolean;
@@ -10,9 +12,20 @@ interface Props {
   syncing: boolean;
   onSync: () => void;
   onReload: () => void;
+  lock: LockSettings | null;
+  onLockChange: (settings: LockSettings | null) => void;
 }
 
-export default function SettingsSheet({ open, onClose, meta, syncing, onSync, onReload }: Props) {
+export default function SettingsSheet({
+  open,
+  onClose,
+  meta,
+  syncing,
+  onSync,
+  onReload,
+  lock,
+  onLockChange,
+}: Props) {
   const { session, signOut, cloud } = useAuth();
   const fileRef = useRef<HTMLInputElement | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -67,6 +80,12 @@ export default function SettingsSheet({ open, onClose, meta, syncing, onSync, on
             </button>
           </div>
         </section>
+
+        <LockSettingsSection
+          settings={lock}
+          onChange={onLockChange}
+          userEmail={session?.user.email}
+        />
 
         <section className="sheet-section">
           <h3>Backup local</h3>
